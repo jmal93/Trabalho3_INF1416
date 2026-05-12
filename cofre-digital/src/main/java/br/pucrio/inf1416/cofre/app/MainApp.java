@@ -5,6 +5,8 @@ import java.sql.Connection;
 import br.pucrio.inf1416.cofre.dao.DatabaseConnection;
 import br.pucrio.inf1416.cofre.dao.DatabaseInitializer;
 import br.pucrio.inf1416.cofre.dao.UserDAO;
+import br.pucrio.inf1416.cofre.ui.RegisterUserView;
+import br.pucrio.inf1416.cofre.ui.RegisterUserView.RegisterMode;
 
 public class MainApp {
 	public static void main(String[] args) {
@@ -15,9 +17,11 @@ public class MainApp {
 			UserDAO userDAO = new UserDAO(connection);
 
 			if (!userDAO.hasAnyUser()) {
-				System.out.println("Primeira execução");
+				RegisterUserView registerUserView = new RegisterUserView(RegisterMode.INITIAL_ADMIN);
+				registerUserView.setVisible(true);
 			} else {
-				System.out.println("Execução normal");
+				RegisterUserView registerUserView = new RegisterUserView(RegisterMode.INITIAL_ADMIN);
+				registerUserView.setVisible(false);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

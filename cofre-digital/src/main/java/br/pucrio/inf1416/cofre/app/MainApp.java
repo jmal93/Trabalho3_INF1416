@@ -19,6 +19,8 @@ public class MainApp {
 			if (!userDAO.hasAnyUser()) {
 				RegisterUserView registerUserView = new RegisterUserView(RegisterMode.INITIAL_ADMIN);
 				registerUserView.setVisible(true);
+//				LoginView loginView = new LoginView();
+//				loginView.setVisible(true);
 			} else {
 				RegisterUserView registerUserView = new RegisterUserView(RegisterMode.INITIAL_ADMIN);
 				registerUserView.setVisible(false);

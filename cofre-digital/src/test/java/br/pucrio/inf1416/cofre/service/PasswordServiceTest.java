@@ -1,6 +1,8 @@
 package br.pucrio.inf1416.cofre.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -52,5 +54,15 @@ class PasswordServiceTest {
 
 		result = passwordService.passwordsAreEqual("123456789", "12345678");
 		assertFalse(result);
+	}
+
+	@Test
+	void encryptedPassword() {
+		String password = "13572468";
+		String hash = passwordService.encryptPassword(password);
+		assertNotNull(hash);
+		assertTrue(hash.startsWith("$2y$08$"));
+		assertEquals(60, hash.length());
+		assertTrue(passwordService.checkPassword(password, hash));
 	}
 }

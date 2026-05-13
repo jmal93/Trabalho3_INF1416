@@ -35,7 +35,7 @@ class CertificateServiceTest {
 
 		assertNotNull(info.certificate());
 
-		assertEquals("admin@inf1416.puc-rio.br", info.email());
+		assertEquals("user01@inf1416.puc-rio.br", info.email());
 
 		assertFalse(info.name().isBlank());
 

@@ -71,9 +71,38 @@ public class CertificateService {
 			if (trimmed.startsWith("E=")) {
 				return trimmed.substring(2);
 			}
+
+			if (trimmed.startsWith("1.2.840.113549.1.9.1=")) {
+				String value = trimmed.substring("1.2.840.113549.1.9.1=".length());
+
+				if (value.startsWith("#")) {
+					return decodeAsn1HexEmail(value);
+				}
+
+				return value;
+			}
 		}
 
 		return "";
+	}
+
+	private String decodeAsn1HexEmail(String value) {
+		String hex = value.substring(1);
+		System.out.println(hex);
+
+		if (hex.startsWith("16") && hex.length() >= 4) {
+			hex = hex.substring(4);
+		}
+
+		StringBuilder result = new StringBuilder();
+
+		for (int i = 0; i < hex.length(); i += 2) {
+			String byteHex = hex.substring(i, i + 2);
+			int character = Integer.parseInt(byteHex, 16);
+			result.append((char) character);
+		}
+
+		return result.toString();
 	}
 
 	public PrivateKey loadEncryptedPrivateKey(String privateKeyPath, String secretPhrase) throws Exception {

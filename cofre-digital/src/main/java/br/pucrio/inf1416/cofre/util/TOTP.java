@@ -1,5 +1,7 @@
 package br.pucrio.inf1416.cofre.util;
 
+import java.util.Date;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -27,15 +29,41 @@ public class TOTP {
 		}
 	}
 
-	private String getTOTPCodeFromHash(byte[] hash) {
-		int offset = hash[hash.length - 1] & 0x0F;
+	public String generateCode() {
+		long currentTimeSeconds = new Date().getTime() / 1000;
+		long timeInterval = currentTimeSeconds / timeStepInSeconds;
 
-		int binaryCode = ((hash[offset] & 0x7F) << 24) | ((hash[offset + 1] & 0xFF) << 16)
-				| ((hash[offset + 2] & 0xFF) << 8) | (hash[offset + 3] & 0xFF);
+		return TOTPCode(timeInterval);
+	}
 
-		int otp = binaryCode % 1_000_000;
+	public boolean validateCode(String inputTOTP) {
+		if (inputTOTP == null || !inputTOTP.matches("\\d{6}")) {
+			return false;
+		}
 
-		return String.format("%06d", otp);
+		long currentTimeSeconds = new Date().getTime() / 1000;
+		long currentInterval = currentTimeSeconds / timeStepInSeconds;
+
+		String previousCode = TOTPCode(currentInterval - 1);
+		String currentCode = TOTPCode(currentInterval);
+		String nextCode = TOTPCode(currentInterval + 1);
+
+		return inputTOTP.equals(previousCode) || inputTOTP.equals(currentCode) || inputTOTP.equals(nextCode);
+	}
+
+	private String TOTPCode(long timeInterval) {
+		byte[] counter = new byte[8];
+
+		long value = timeInterval;
+
+		for (int i = 7; i >= 0; i--) {
+			counter[i] = (byte) (value & 0xFF);
+			value >>= 8;
+		}
+
+		byte[] hash = HMAC_SHA1(counter, key);
+
+		return getTOTPCodeFromHash(hash);
 	}
 
 	private byte[] HMAC_SHA1(byte[] counter, byte[] keyByteArray) {
@@ -51,12 +79,15 @@ public class TOTP {
 		}
 	}
 
-	private String TOTPCode(long timeInterval) {
+	private String getTOTPCodeFromHash(byte[] hash) {
+		int offset = hash[hash.length - 1] & 0x0F;
+
+		int binaryCode = ((hash[offset] & 0x7F) << 24) | ((hash[offset + 1] & 0xFF) << 16)
+				| ((hash[offset + 2] & 0xFF) << 8) | (hash[offset + 3] & 0xFF);
+
+		int otp = binaryCode % 1_000_000;
+
+		return String.format("%06d", otp);
 	}
 
-	public String generateCode() {
-	}
-
-	public boolean validateCode(String inputTOTP) {
-	}
 }

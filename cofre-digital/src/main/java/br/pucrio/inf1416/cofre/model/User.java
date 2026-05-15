@@ -7,10 +7,11 @@ public class User {
 	private String login;
 	private String nome;
 	private int gid;
+	private String groupName;
 	private String passwordHash;
 	private byte[] encryptedTOTPSecret;
 	private LocalDateTime blockedUntil;
-	private int totalAcess;
+	private int totalAccesses;
 	private int totalQueries;
 
 	public User() {
@@ -55,6 +56,14 @@ public class User {
 		this.gid = gid;
 	}
 
+	public String getGroupName() {
+		return groupName;
+	}
+
+	public void setGroupName(String groupName) {
+		this.groupName = groupName;
+	}
+
 	public String getPasswordHash() {
 		return passwordHash;
 	}
@@ -79,12 +88,12 @@ public class User {
 		this.blockedUntil = blockedUntil;
 	}
 
-	public int getTotalAcess() {
-		return totalAcess;
+	public int getTotalAccesses() {
+		return totalAccesses;
 	}
 
-	public void setTotalAcess(int totalAcess) {
-		this.totalAcess = totalAcess;
+	public void setTotalAccesses(int totalAcess) {
+		this.totalAccesses = totalAcess;
 	}
 
 	public int getTotalQueries() {

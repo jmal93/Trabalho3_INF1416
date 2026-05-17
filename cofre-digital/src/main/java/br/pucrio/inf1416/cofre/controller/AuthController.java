@@ -12,13 +12,12 @@ public class AuthController {
 	private User currentUser;
 	private String validatedPassword;
 
-	public AuthController(LoginView loginView, AuthenticationService authenticationService, User currentUser,
-			String validatedPassword) {
+	public AuthController(LoginView loginView, AuthenticationService authenticationService) {
 		super();
 		this.loginView = loginView;
 		this.authenticationService = authenticationService;
-		this.currentUser = currentUser;
-		this.validatedPassword = validatedPassword;
+		this.currentUser = null;
+		this.validatedPassword = null;
 
 		configureActions();
 	}

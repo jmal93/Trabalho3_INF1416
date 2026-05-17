@@ -86,4 +86,8 @@ public class MainMenuView extends JFrame {
 	public void setExitAction(Runnable action) {
 		exitButton.addActionListener(e -> action.run());
 	}
+
+	public void showMessage(String message) {
+		javax.swing.JOptionPane.showMessageDialog(this, message);
+	}
 }

@@ -1,11 +1,15 @@
 package br.pucrio.inf1416.cofre.service;
 
 import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Signature;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 public class CryptoService {
 	public byte[] encryptWithPassword(byte[] data, String password) throws Exception {
@@ -15,6 +19,15 @@ public class CryptoService {
 		cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
 		return cipher.doFinal(data);
+	}
+
+	public byte[] decryptWithPassword(byte[] encryptedData, String password) throws Exception {
+		SecretKey secretKey = generateAESKeyFromPassword(password);
+
+		Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+		cipher.init(Cipher.DECRYPT_MODE, secretKey);
+
+		return cipher.doFinal(encryptedData);
 	}
 
 	private SecretKey generateAESKeyFromPassword(String password) throws Exception {
@@ -28,12 +41,30 @@ public class CryptoService {
 		return keyGenerator.generateKey();
 	}
 
-	public byte[] decryptWithPassword(byte[] encryptedData, String password) throws Exception {
-		SecretKey secretKey = generateAESKeyFromPassword(password);
+	public byte[] decryptWithPrivateKey(byte[] encryptedData, PrivateKey privateKey) throws Exception {
+		Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+		cipher.init(Cipher.DECRYPT_MODE, privateKey);
 
+		return cipher.doFinal(encryptedData);
+	}
+
+	public SecretKey restoreAESKey(byte[] keyBytes) {
+		return new SecretKeySpec(keyBytes, "AES");
+	}
+
+	public byte[] decryptWithAESKey(byte[] encryptedData, SecretKey secretKey) throws Exception {
 		Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
 		cipher.init(Cipher.DECRYPT_MODE, secretKey);
 
 		return cipher.doFinal(encryptedData);
+	}
+
+	public boolean verifySignature(byte[] data, byte[] signatureBytes, PublicKey publicKey, String algorithm)
+			throws Exception {
+		Signature signature = Signature.getInstance(algorithm);
+		signature.initVerify(publicKey);
+		signature.update(data);
+
+		return signature.verify(signatureBytes);
 	}
 }

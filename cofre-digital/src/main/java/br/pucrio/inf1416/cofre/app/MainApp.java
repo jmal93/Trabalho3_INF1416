@@ -58,7 +58,7 @@ public class MainApp {
 
 				LoginView loginView = new LoginView();
 
-				new AuthController(loginView, authenticationService, null, null);
+				new AuthController(loginView, authenticationService);
 
 				loginView.setVisible(true);
 			}

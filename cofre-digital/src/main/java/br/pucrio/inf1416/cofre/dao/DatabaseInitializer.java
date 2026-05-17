@@ -76,12 +76,72 @@ public class DatabaseInitializer {
 			statement.execute("INSERT OR IGNORE INTO Grupos (gid, nome) VALUES (1, 'Administrador');");
 			statement.execute("INSERT OR IGNORE INTO Grupos (gid, nome) VALUES (2, 'Usuario');");
 
-			statement.execute("INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (1001, 'Sistema iniciado.');");
-			statement.execute("INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (1002, 'Sistema encerrado.');");
 			statement.execute(
-					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (1005, 'Partida do sistema iniciada para cadastro do administrador.');");
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (2001, 'Autenticação etapa 1 iniciada.');");
 			statement.execute(
-					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (1006, 'Partida do sistema iniciada para operação normal pelos usuários.');");
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (2002, 'Autenticação etapa 1 encerrada.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (2003, 'Login identificado com sucesso.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (2004, 'Usuário bloqueado temporariamente.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (2005, 'Login inválido ou não identificado.');");
+
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (3001, 'Autenticação etapa 2 iniciada.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (3002, 'Autenticação etapa 2 encerrada.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (3003, 'Senha pessoal verificada positivamente.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (3004, 'Primeiro erro de senha pessoal.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (3005, 'Segundo erro de senha pessoal.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (3006, 'Terceiro erro de senha pessoal.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (3007, 'Usuário bloqueado após erros de senha.');");
+
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (4001, 'Autenticação etapa 3 iniciada.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (4002, 'Autenticação etapa 3 encerrada.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (4003, 'Token TOTP verificado positivamente.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (4004, 'Primeiro erro de token TOTP.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (4005, 'Segundo erro de token TOTP.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (4006, 'Terceiro erro de token TOTP.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (4007, 'Usuário bloqueado após erros de token TOTP.');");
+
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (6003, 'Erro na senha informada no cadastro.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (6004, 'Erro no arquivo de certificado digital.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (6005, 'Erro no arquivo de chave privada.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (6006, 'Erro na frase secreta da chave privada.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (6007, 'Chave privada incompatível com certificado.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (6008, 'Certificado confirmado pelo usuário.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (6009, 'Cadastro cancelado pelo usuário.');");
+
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (7001, 'Consulta da pasta secreta iniciada.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (7002, 'Consulta da pasta secreta concluída.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (7010, 'Arquivo secreto selecionado.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (7011, 'Acesso negado ao arquivo secreto.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (7013, 'Arquivo secreto decriptado com sucesso.');");
 		}
 	}
 }

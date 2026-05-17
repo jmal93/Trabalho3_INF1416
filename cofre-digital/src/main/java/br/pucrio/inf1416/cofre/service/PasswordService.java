@@ -28,6 +28,10 @@ public class PasswordService {
 	}
 
 	private boolean passwordHasRepeatingCharactersInSequence(String password) {
+		if (password.isEmpty()) {
+			return false;
+		}
+
 		char[] passwordArray = password.toCharArray();
 		char lastCharacter = passwordArray[0];
 
@@ -53,6 +57,10 @@ public class PasswordService {
 	}
 
 	public boolean passwordsAreEqual(String password, String confirmPassword) {
+		if (password == null || confirmPassword == null) {
+			return false;
+		}
+
 		return password.equals(confirmPassword);
 	}
 
@@ -64,6 +72,10 @@ public class PasswordService {
 	}
 
 	public boolean checkPassword(String password, String hash) {
+		if (password == null || hash == null || hash.isBlank()) {
+			return false;
+		}
+
 		return OpenBSDBCrypt.checkPassword(hash, password.toCharArray());
 
 	}

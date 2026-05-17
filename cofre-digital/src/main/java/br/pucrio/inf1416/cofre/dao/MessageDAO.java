@@ -25,6 +25,9 @@ public class MessageDAO {
 			statement.setInt(1, mid);
 
 			try (ResultSet resultSet = statement.executeQuery()) {
+				if (!resultSet.next()) {
+					return "Mensagem não cadastrada para MID " + mid;
+				}
 				return resultSet.getString("texto");
 			}
 		}

@@ -62,7 +62,7 @@ class KeyringDAOTest {
 					VALUES (1, 1, 'certificado', X'000102')
 					""");
 
-			KeyPairRecord keyPairRecord = keyringDAO.findUserById(1);
+			KeyPairRecord keyPairRecord = keyringDAO.findByUserId(1);
 
 			assertEquals(1, keyPairRecord.getKid());
 			assertEquals(1, keyPairRecord.getUid());

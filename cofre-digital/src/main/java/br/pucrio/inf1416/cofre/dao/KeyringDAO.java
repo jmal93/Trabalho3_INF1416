@@ -28,7 +28,7 @@ public class KeyringDAO {
 		}
 	}
 
-	public KeyPairRecord findUserById(int uid) throws Exception {
+	public KeyPairRecord findByUserId(int uid) throws Exception {
 		String sqlString = """
 				SELECT * FROM Chaveiro
 				WHERE uid = ?

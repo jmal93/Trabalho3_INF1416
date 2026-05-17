@@ -46,7 +46,7 @@ public class GroupDAO {
 				""";
 
 		try (PreparedStatement statement = connection.prepareStatement(sqlString)) {
-			statement.setString(1, name);
+			statement.setString(1, normalizeGroupName(name));
 
 			try (ResultSet resultSet = statement.executeQuery()) {
 				if (!resultSet.next()) {
@@ -95,7 +95,7 @@ public class GroupDAO {
 				""";
 
 		try (PreparedStatement statement = connection.prepareStatement(sqlString)) {
-			statement.setString(1, name);
+			statement.setString(1, normalizeGroupName(name));
 
 			try (ResultSet resultSet = statement.executeQuery()) {
 				if (!resultSet.next()) {
@@ -105,5 +105,13 @@ public class GroupDAO {
 				return resultSet.getInt("gid");
 			}
 		}
+	}
+
+	private String normalizeGroupName(String name) {
+		if ("Usuário".equals(name)) {
+			return "Usuario";
+		}
+
+		return name;
 	}
 }

@@ -90,7 +90,7 @@ public class VaultService {
 			throw new IllegalArgumentException("Assinatura não encontrada: " + asdPath.getFileName());
 		}
 
-		KeyPairRecord keyPairRecord = keyringDAO.findUserById(user.getUid());
+		KeyPairRecord keyPairRecord = keyringDAO.findByUserId(user.getUid());
 
 		if (keyPairRecord == null) {
 			throw new IllegalArgumentException("Chaveiro do usuário não encontrado.");

@@ -76,6 +76,15 @@ public class DatabaseInitializer {
 			statement.execute("INSERT OR IGNORE INTO Grupos (gid, nome) VALUES (1, 'Administrador');");
 			statement.execute("INSERT OR IGNORE INTO Grupos (gid, nome) VALUES (2, 'Usuario');");
 
+			statement.execute("INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (1001, 'Sistema iniciado.');");
+			statement.execute("INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (1002, 'Sistema encerrado.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (1003, 'Acesso do usuário registrado.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (1005, 'Primeira execução detectada.');");
+			statement.execute(
+					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (1006, 'Execução normal detectada.');");
+
 			statement.execute(
 					"INSERT OR IGNORE INTO Mensagens (mid, texto) VALUES (2001, 'Autenticação etapa 1 iniciada.');");
 			statement.execute(

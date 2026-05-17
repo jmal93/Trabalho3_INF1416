@@ -14,7 +14,6 @@ public record CertificateInfo(X509Certificate certificate, String version, Strin
 				Sujeito: %s
 				Nome: %s
 				E-Mail: %s
-				""".format(version, serialNumber, validity, signatureType, issuer, subject, name, email);
+				""".formatted(version, serialNumber, validity, signatureType, issuer, subject, name, email);
 	}
-
 }

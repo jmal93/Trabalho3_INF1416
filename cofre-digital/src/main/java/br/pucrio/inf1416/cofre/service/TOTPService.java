@@ -57,19 +57,18 @@ public class TOTPService {
 	}
 
 	public boolean validateToken(User user, String inputToken, String personalPassword) throws Exception {
-		if (user == null) {
-			throw new IllegalArgumentException("Usuário inválido");
-		}
-
-		if (inputToken == null || !inputToken.matches("\\d{6}")) {
-			return false;
-		}
-
 		byte[] encryptedSecret = user.getEncryptedTOTPSecret();
 
 		String base32Secret = decryptBase32Secret(encryptedSecret, personalPassword);
 
+		System.out.println("Senha usada para abrir TOTP: " + personalPassword);
+		System.out.println("Segredo TOTP decriptado: " + base32Secret);
+		System.out.println("Token digitado: " + inputToken);
+
 		TOTP totp = new TOTP(base32Secret, TIME_STEP_SECONDS);
+
+		String currentCode = totp.generateCode();
+		System.out.println("Token calculado agora pelo sistema: " + currentCode);
 
 		return totp.validateCode(inputToken);
 	}

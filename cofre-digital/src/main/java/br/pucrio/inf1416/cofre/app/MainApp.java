@@ -15,6 +15,7 @@ import br.pucrio.inf1416.cofre.service.AuthenticationService;
 import br.pucrio.inf1416.cofre.service.CertificateService;
 import br.pucrio.inf1416.cofre.service.CryptoService;
 import br.pucrio.inf1416.cofre.service.PasswordService;
+import br.pucrio.inf1416.cofre.service.QRCodeService;
 import br.pucrio.inf1416.cofre.service.TOTPService;
 import br.pucrio.inf1416.cofre.service.VaultService;
 import br.pucrio.inf1416.cofre.ui.LoginView;
@@ -37,6 +38,7 @@ public class MainApp {
 			AuditService auditService = new AuditService(logDAO);
 			PasswordService passwordService = new PasswordService();
 			CryptoService cryptoService = new CryptoService();
+			QRCodeService qrCodeService = new QRCodeService();
 			TOTPService totpService = new TOTPService(cryptoService);
 			CertificateService certificateService = new CertificateService();
 			VaultService vaultService = new VaultService(cryptoService, certificateService, keyringDAO, auditService);
@@ -48,8 +50,8 @@ public class MainApp {
 
 				RegisterUserView registerUserView = new RegisterUserView(RegisterMode.INITIAL_ADMIN);
 
-				new UserController(registerUserView, certificateService, passwordService, totpService, userDAO,
-						keyringDAO, groupDAO, auditService);
+				new UserController(registerUserView, certificateService, passwordService, totpService, qrCodeService,
+						userDAO, keyringDAO, groupDAO, auditService);
 
 				registerUserView.setVisible(true);
 			} else {
@@ -61,7 +63,7 @@ public class MainApp {
 				LoginView loginView = new LoginView();
 
 				new AuthController(loginView, authenticationService, certificateService, passwordService, totpService,
-						userDAO, keyringDAO, groupDAO, auditService, vaultService);
+						qrCodeService, userDAO, keyringDAO, groupDAO, auditService, vaultService);
 
 				loginView.setVisible(true);
 			}

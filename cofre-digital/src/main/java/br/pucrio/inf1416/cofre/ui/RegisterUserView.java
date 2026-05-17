@@ -1,8 +1,16 @@
 package br.pucrio.inf1416.cofre.ui;
 
+import java.awt.BorderLayout;
+import java.awt.image.BufferedImage;
+
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 public class RegisterUserView extends BaseFormView {
@@ -113,21 +121,40 @@ public class RegisterUserView extends BaseFormView {
 	}
 
 	public void showMessage(String message) {
-		javax.swing.JOptionPane.showMessageDialog(this, message);
+		JOptionPane.showMessageDialog(this, message);
 	}
 
 	public boolean showCertificateConfirmation(String certificateInfo) {
-		int option = javax.swing.JOptionPane.showConfirmDialog(this, certificateInfo, "Confirmação do certificado",
-				javax.swing.JOptionPane.YES_NO_OPTION, javax.swing.JOptionPane.INFORMATION_MESSAGE);
+		int option = JOptionPane.showConfirmDialog(this, certificateInfo, "Confirmação do certificado",
+				JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE);
 
-		return option == javax.swing.JOptionPane.YES_OPTION;
+		return option == JOptionPane.YES_OPTION;
 	}
 
 	public void showTotpSecret(String login, String base32Secret) {
-		javax.swing.JOptionPane.showMessageDialog(this,
+		JOptionPane.showMessageDialog(this,
 				"Usuário cadastrado com sucesso.\n\n" + "Configure o Google Authenticator com os dados abaixo:\n\n"
 						+ "Conta: " + login + "\n" + "Segredo: " + base32Secret,
-				"Segredo TOTP", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+				"Segredo TOTP", JOptionPane.INFORMATION_MESSAGE);
+	}
+
+	public void showTotpQRCode(String login, String base32Secret, BufferedImage qrCodeImage) {
+		JLabel qrCodeLabel = new JLabel(new ImageIcon(qrCodeImage));
+
+		JTextArea textArea = new JTextArea("Usuário cadastrado com sucesso.\n\n"
+				+ "Escaneie o QR Code abaixo no Google Authenticator.\n\n" + "Conta: " + login + "\n" + "Chave manual: "
+				+ base32Secret + "\n\n" + "Guarde a chave manual apenas para teste/recuperação.");
+
+		textArea.setEditable(false);
+		textArea.setOpaque(false);
+		textArea.setLineWrap(true);
+		textArea.setWrapStyleWord(true);
+
+		JPanel panel = new JPanel(new BorderLayout(10, 10));
+		panel.add(textArea, BorderLayout.NORTH);
+		panel.add(qrCodeLabel, BorderLayout.CENTER);
+
+		JOptionPane.showMessageDialog(this, panel, "Configurar Google Authenticator", JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	public void clearForm() {

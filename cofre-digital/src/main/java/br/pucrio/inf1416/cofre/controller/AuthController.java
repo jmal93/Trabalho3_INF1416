@@ -8,6 +8,7 @@ import br.pucrio.inf1416.cofre.service.AuditService;
 import br.pucrio.inf1416.cofre.service.AuthenticationService;
 import br.pucrio.inf1416.cofre.service.CertificateService;
 import br.pucrio.inf1416.cofre.service.PasswordService;
+import br.pucrio.inf1416.cofre.service.QRCodeService;
 import br.pucrio.inf1416.cofre.service.TOTPService;
 import br.pucrio.inf1416.cofre.service.VaultService;
 import br.pucrio.inf1416.cofre.ui.LoginView;
@@ -21,6 +22,7 @@ public class AuthController {
 	private final CertificateService certificateService;
 	private final PasswordService passwordService;
 	private final TOTPService totpService;
+	private final QRCodeService qrCodeService;
 	private final UserDAO userDAO;
 	private final KeyringDAO keyringDAO;
 	private final GroupDAO groupDAO;
@@ -32,13 +34,15 @@ public class AuthController {
 
 	public AuthController(LoginView loginView, AuthenticationService authenticationService,
 			CertificateService certificateService, PasswordService passwordService, TOTPService totpService,
-			UserDAO userDAO, KeyringDAO keyringDAO, GroupDAO groupDAO, AuditService auditService,
-			VaultService vaultService) {
+			QRCodeService qrCodeService, UserDAO userDAO, KeyringDAO keyringDAO, GroupDAO groupDAO,
+			AuditService auditService, VaultService vaultService) {
+		super();
 		this.loginView = loginView;
 		this.authenticationService = authenticationService;
 		this.certificateService = certificateService;
 		this.passwordService = passwordService;
 		this.totpService = totpService;
+		this.qrCodeService = qrCodeService;
 		this.userDAO = userDAO;
 		this.keyringDAO = keyringDAO;
 		this.groupDAO = groupDAO;
@@ -137,7 +141,7 @@ public class AuthController {
 		MainMenuView mainMenuView = new MainMenuView(authenticatedUser);
 
 		new MainMenuController(mainMenuView, authenticatedUser, certificateService, passwordService, totpService,
-				userDAO, keyringDAO, groupDAO, auditService, vaultService);
+				qrCodeService, userDAO, keyringDAO, groupDAO, auditService, vaultService);
 
 		mainMenuView.setVisible(true);
 	}

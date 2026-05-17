@@ -7,6 +7,7 @@ import br.pucrio.inf1416.cofre.model.User;
 import br.pucrio.inf1416.cofre.service.AuditService;
 import br.pucrio.inf1416.cofre.service.CertificateService;
 import br.pucrio.inf1416.cofre.service.PasswordService;
+import br.pucrio.inf1416.cofre.service.QRCodeService;
 import br.pucrio.inf1416.cofre.service.TOTPService;
 import br.pucrio.inf1416.cofre.service.VaultService;
 import br.pucrio.inf1416.cofre.ui.MainMenuView;
@@ -21,6 +22,7 @@ public class MainMenuController {
 	private final CertificateService certificateService;
 	private final PasswordService passwordService;
 	private final TOTPService totpService;
+	private final QRCodeService qrCodeService;
 	private final UserDAO userDAO;
 	private final KeyringDAO keyringDAO;
 	private final GroupDAO groupDAO;
@@ -28,14 +30,15 @@ public class MainMenuController {
 	private final VaultService vaultService;
 
 	public MainMenuController(MainMenuView mainMenuView, User currentUser, CertificateService certificateService,
-			PasswordService passwordService, TOTPService totpService, UserDAO userDAO, KeyringDAO keyringDAO,
-			GroupDAO groupDAO, AuditService auditService, VaultService vaultService) {
+			PasswordService passwordService, TOTPService totpService, QRCodeService qrCodeService, UserDAO userDAO,
+			KeyringDAO keyringDAO, GroupDAO groupDAO, AuditService auditService, VaultService vaultService) {
 		super();
 		this.mainMenuView = mainMenuView;
 		this.currentUser = currentUser;
 		this.certificateService = certificateService;
 		this.passwordService = passwordService;
 		this.totpService = totpService;
+		this.qrCodeService = qrCodeService;
 		this.userDAO = userDAO;
 		this.keyringDAO = keyringDAO;
 		this.groupDAO = groupDAO;
@@ -60,8 +63,8 @@ public class MainMenuController {
 
 			RegisterUserView registerUserView = new RegisterUserView(RegisterMode.NEW_USER);
 
-			new UserController(registerUserView, certificateService, passwordService, totpService, userDAO, keyringDAO,
-					groupDAO, auditService);
+			new UserController(registerUserView, certificateService, passwordService, totpService, qrCodeService,
+					userDAO, keyringDAO, groupDAO, auditService);
 
 			registerUserView.setVisible(true);
 		} catch (Exception e) {

@@ -1,5 +1,6 @@
 package br.pucrio.inf1416.cofre.controller;
 
+import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.PrivateKey;
@@ -14,6 +15,7 @@ import br.pucrio.inf1416.cofre.model.User;
 import br.pucrio.inf1416.cofre.service.AuditService;
 import br.pucrio.inf1416.cofre.service.CertificateService;
 import br.pucrio.inf1416.cofre.service.PasswordService;
+import br.pucrio.inf1416.cofre.service.QRCodeService;
 import br.pucrio.inf1416.cofre.service.TOTPService;
 import br.pucrio.inf1416.cofre.ui.RegisterUserView;
 import br.pucrio.inf1416.cofre.ui.RegisterUserView.RegisterMode;
@@ -24,19 +26,21 @@ public class UserController {
 	private final CertificateService certificateService;
 	private final PasswordService passwordService;
 	private final TOTPService totpService;
+	private final QRCodeService qrCodeService;
 	private final UserDAO userDAO;
 	private final KeyringDAO keyringDAO;
 	private final GroupDAO groupDAO;
 	private final AuditService auditService;
 
 	public UserController(RegisterUserView registerUserView, CertificateService certificateService,
-			PasswordService passwordService, TOTPService totpService, UserDAO userDAO, KeyringDAO keyringDAO,
-			GroupDAO groupDAO, AuditService auditService) {
+			PasswordService passwordService, TOTPService totpService, QRCodeService qrCodeService, UserDAO userDAO,
+			KeyringDAO keyringDAO, GroupDAO groupDAO, AuditService auditService) {
 		super();
 		this.registerUserView = registerUserView;
 		this.certificateService = certificateService;
 		this.passwordService = passwordService;
 		this.totpService = totpService;
+		this.qrCodeService = qrCodeService;
 		this.userDAO = userDAO;
 		this.keyringDAO = keyringDAO;
 		this.groupDAO = groupDAO;
@@ -127,7 +131,11 @@ public class UserController {
 
 			keyringDAO.insert(keyPairRecord);
 
-			registerUserView.showTotpSecret(login, base32Secret);
+			String totpUri = qrCodeService.buildTotpUri(login, base32Secret);
+
+			BufferedImage qrCodeImage = qrCodeService.generateQRCodeImage(totpUri, 240, 240);
+
+			registerUserView.showTotpQRCode(login, base32Secret, qrCodeImage);
 			registerUserView.clearForm();
 
 			if (registerUserView.getMode() == RegisterMode.INITIAL_ADMIN) {

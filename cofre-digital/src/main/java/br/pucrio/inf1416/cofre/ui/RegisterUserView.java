@@ -75,4 +75,70 @@ public class RegisterUserView extends BaseFormView {
 			backButton.setVisible(false);
 		}
 	}
+
+	public String getCertificatePath() {
+		return certificatePathField.getText().trim();
+	}
+
+	public String getPrivateKeyPath() {
+		return privateKeyPathField.getText().trim();
+	}
+
+	public String getSecretPhrase() {
+		return new String(secretPhraseField.getPassword());
+	}
+
+	public String getSelectedGroup() {
+		return (String) groupComboBox.getSelectedItem();
+	}
+
+	public String getPassword() {
+		return new String(passwordField.getPassword());
+	}
+
+	public String getConfirmPassword() {
+		return new String(confirmPasswordField.getPassword());
+	}
+
+	public RegisterMode getMode() {
+		return mode;
+	}
+
+	public void setRegisterAction(Runnable action) {
+		registerButton.addActionListener(e -> action.run());
+	}
+
+	public void setBackAction(Runnable action) {
+		backButton.addActionListener(e -> action.run());
+	}
+
+	public void showMessage(String message) {
+		javax.swing.JOptionPane.showMessageDialog(this, message);
+	}
+
+	public boolean showCertificateConfirmation(String certificateInfo) {
+		int option = javax.swing.JOptionPane.showConfirmDialog(this, certificateInfo, "Confirmação do certificado",
+				javax.swing.JOptionPane.YES_NO_OPTION, javax.swing.JOptionPane.INFORMATION_MESSAGE);
+
+		return option == javax.swing.JOptionPane.YES_OPTION;
+	}
+
+	public void showTotpSecret(String login, String base32Secret) {
+		javax.swing.JOptionPane.showMessageDialog(this,
+				"Usuário cadastrado com sucesso.\n\n" + "Configure o Google Authenticator com os dados abaixo:\n\n"
+						+ "Conta: " + login + "\n" + "Segredo: " + base32Secret,
+				"Segredo TOTP", javax.swing.JOptionPane.INFORMATION_MESSAGE);
+	}
+
+	public void clearForm() {
+		certificatePathField.setText("");
+		privateKeyPathField.setText("");
+		secretPhraseField.setText("");
+		passwordField.setText("");
+		confirmPasswordField.setText("");
+
+		if (mode == RegisterMode.NEW_USER) {
+			groupComboBox.setSelectedIndex(0);
+		}
+	}
 }

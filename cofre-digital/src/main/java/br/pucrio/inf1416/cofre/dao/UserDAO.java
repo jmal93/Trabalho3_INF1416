@@ -91,4 +91,62 @@ public class UserDAO {
 			statement.execute();
 		}
 	}
+
+	public boolean existsByLogin(String login) throws Exception {
+		String sqlString = """
+				SELECT COUNT(*) FROM Usuarios
+				WHERE login = ?
+				""";
+
+		try (PreparedStatement statement = connection.prepareStatement(sqlString)) {
+			statement.setString(1, login);
+
+			try (ResultSet resultSet = statement.executeQuery()) {
+				return resultSet.next() && resultSet.getInt(1) > 0;
+			}
+		}
+	}
+
+	public int insert(User user) throws Exception {
+		String sql = """
+				INSERT INTO Usuarios (
+					login,
+					nome,
+					gid,
+					senha_hash,
+					totp_secret_enc,
+					bloqueado_ate,
+					total_acessos,
+					total_consultas
+				)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+				""";
+
+		try (PreparedStatement statement = connection.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
+			statement.setString(1, user.getLogin());
+			statement.setString(2, user.getNome());
+			statement.setInt(3, user.getGid());
+			statement.setString(4, user.getPasswordHash());
+			statement.setBytes(5, user.getEncryptedTOTPSecret());
+
+			if (user.getBlockedUntil() == null) {
+				statement.setNull(6, java.sql.Types.VARCHAR);
+			} else {
+				statement.setString(6, user.getBlockedUntil().toString());
+			}
+
+			statement.setInt(7, user.getTotalAccesses());
+			statement.setInt(8, user.getTotalQueries());
+
+			statement.executeUpdate();
+
+			try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+				if (generatedKeys.next()) {
+					return generatedKeys.getInt(1);
+				}
+			}
+
+			throw new java.sql.SQLException("Falha ao obter UID gerado.");
+		}
+	}
 }

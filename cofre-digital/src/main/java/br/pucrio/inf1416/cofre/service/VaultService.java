@@ -50,6 +50,7 @@ public class VaultService {
 
 	public void decryptSelectedFile(User user, Path folderPath, SecretFileEntry entry, String secretPhrase)
 			throws Exception {
+
 		if (entry == null) {
 			throw new IllegalArgumentException("Nenhum arquivo selecionado.");
 		}
@@ -60,7 +61,7 @@ public class VaultService {
 
 		if (!canDecryptFile(user, entry)) {
 			auditService.log(7011, user, entry.getCodeName());
-			throw new IllegalArgumentException("Você não tem permissão para decriptar este arquivo.");
+			throw new IllegalArgumentException("Você não tem permissão para descriptografar este arquivo.");
 		}
 
 		byte[] decryptedBytes = decryptProtectedFile(folderPath, entry.getCodeName(), user, secretPhrase);
@@ -100,7 +101,8 @@ public class VaultService {
 
 		X509Certificate certificate = certificateInfo.certificate();
 
-		PrivateKey privateKey = loadPrivateKeyFromEncryptedBytes(keyPairRecord.getEncryptedPrivateKey(), secretPhrase);
+		PrivateKey privateKey = certificateService.loadEncryptedPrivateKey(keyPairRecord.getEncryptedPrivateKey(),
+				secretPhrase);
 
 		boolean keyPairValid = certificateService.verifyKeyPair(privateKey, certificate);
 
@@ -108,24 +110,32 @@ public class VaultService {
 			throw new IllegalArgumentException("Frase secreta inválida ou chave privada incompatível.");
 		}
 
-		byte[] encryptedAesKey = Files.readAllBytes(envPath);
+		byte[] encryptedSeed = Files.readAllBytes(envPath);
 
-		byte[] aesKeyBytes = cryptoService.decryptWithPrivateKey(encryptedAesKey, privateKey);
+		byte[] seedBytes = cryptoService.decryptWithPrivateKey(encryptedSeed, privateKey);
 
-		SecretKey aesKey = cryptoService.restoreAESKey(aesKeyBytes);
+		SecretKey aesKey = cryptoService.generateAESKeyFromSeed(seedBytes);
 
 		byte[] encryptedContent = Files.readAllBytes(encPath);
 
 		byte[] decryptedContent = cryptoService.decryptWithAESKey(encryptedContent, aesKey);
 
-		byte[] signatureBytes = Files.readAllBytes(asdPath);
+		byte[] signatureBytes = readPossiblyBase64File(asdPath);
 
 		PublicKey publicKey = certificate.getPublicKey();
 
-		boolean signatureValid = cryptoService.verifySignature(decryptedContent, signatureBytes, publicKey,
-				certificate.getSigAlgName());
+		System.out.println("Algoritmo do certificado: " + certificate.getSigAlgName());
 
-		if (!signatureValid) {
+		boolean signatureValidOverEncrypted = cryptoService.verifySignatureWithAlgorithms(encryptedContent,
+				signatureBytes, publicKey);
+
+		boolean signatureValidOverDecrypted = cryptoService.verifySignatureWithAlgorithms(decryptedContent,
+				signatureBytes, publicKey);
+
+		System.out.println("Assinatura sobre .enc válida? " + signatureValidOverEncrypted);
+		System.out.println("Assinatura sobre conteúdo decriptado válida? " + signatureValidOverDecrypted);
+
+		if (!signatureValidOverEncrypted && !signatureValidOverDecrypted) {
 			throw new IllegalArgumentException("Assinatura digital inválida.");
 		}
 
@@ -197,39 +207,22 @@ public class VaultService {
 	}
 
 	private boolean canDecryptFile(User user, SecretFileEntry entry) {
-		/*
-		 * Pelo que vínhamos considerando: - listar pode considerar dono ou grupo; -
-		 * decriptar deve exigir que o usuário seja dono.
-		 *
-		 * Se o enunciado permitir decriptar por grupo também, ajuste esta regra.
-		 */
 		return user.getLogin().equalsIgnoreCase(entry.getOwner());
 	}
 
-	private X509Certificate loadCertificateFromPem(String certificatePem) throws Exception {
-		/*
-		 * Melhor implementação: adicionar método público no CertificateService:
-		 *
-		 * public X509Certificate loadCertificateFromPem(String pem)
-		 *
-		 * Por enquanto, você precisa mover parte do código de loadCertificate() para um
-		 * método reutilizável.
-		 */
-		throw new UnsupportedOperationException("Implementar loadCertificateFromPem no CertificateService.");
-	}
+	private byte[] readPossiblyBase64File(Path path) throws Exception {
+		byte[] rawBytes = Files.readAllBytes(path);
 
-	private PrivateKey loadPrivateKeyFromEncryptedBytes(byte[] encryptedPrivateKey, String secretPhrase)
-			throws Exception {
-		/*
-		 * Melhor implementação: adicionar método público no CertificateService:
-		 *
-		 * public PrivateKey loadEncryptedPrivateKey(byte[] encryptedPrivateKeyBytes,
-		 * String secretPhrase)
-		 *
-		 * Por enquanto, você precisa extrair a lógica de loadEncryptedPrivateKey(String
-		 * path, ...) para aceitar byte[] diretamente.
-		 */
-		throw new UnsupportedOperationException(
-				"Implementar loadEncryptedPrivateKey(byte[], ...) no CertificateService.");
+		String text = new String(rawBytes, StandardCharsets.UTF_8).trim();
+
+		if (text.matches("[A-Za-z0-9+/=\\r\\n\\s]+")) {
+			try {
+				return java.util.Base64.getDecoder().decode(text.replaceAll("\\s", ""));
+			} catch (IllegalArgumentException ignored) {
+				return rawBytes;
+			}
+		}
+
+		return rawBytes;
 	}
 }

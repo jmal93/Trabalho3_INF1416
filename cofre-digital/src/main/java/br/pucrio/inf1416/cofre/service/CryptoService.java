@@ -67,4 +67,36 @@ public class CryptoService {
 
 		return signature.verify(signatureBytes);
 	}
+
+	public SecretKey generateAESKeyFromSeed(byte[] seedBytes) throws Exception {
+		KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+
+		SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
+		secureRandom.setSeed(seedBytes);
+
+		keyGenerator.init(256, secureRandom);
+
+		return keyGenerator.generateKey();
+	}
+
+	public boolean verifySignatureWithAlgorithms(byte[] data, byte[] signatureBytes, PublicKey publicKey)
+			throws Exception {
+		String[] algorithms = { "SHA1withRSA", "SHA256withRSA", "SHA384withRSA", "SHA512withRSA", "MD5withRSA" };
+
+		for (String algorithm : algorithms) {
+			try {
+				boolean valid = verifySignature(data, signatureBytes, publicKey, algorithm);
+
+				System.out.println("Testando algoritmo " + algorithm + ": " + valid);
+
+				if (valid) {
+					return true;
+				}
+			} catch (Exception e) {
+				System.out.println("Algoritmo falhou: " + algorithm + " - " + e.getMessage());
+			}
+		}
+
+		return false;
+	}
 }

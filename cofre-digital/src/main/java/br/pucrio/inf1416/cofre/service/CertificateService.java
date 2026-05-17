@@ -1,6 +1,7 @@
 package br.pucrio.inf1416.cofre.service;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyFactory;
@@ -22,7 +23,10 @@ public class CertificateService {
 
 	public CertificateInfo loadCertificate(String certificatePath) throws Exception {
 		String pem = Files.readString(Path.of(certificatePath));
+		return loadCertificateFromPem(pem);
+	}
 
+	public CertificateInfo loadCertificateFromPem(String pem) throws Exception {
 		int begin = pem.indexOf("-----BEGIN CERTIFICATE-----");
 		int end = pem.indexOf("-----END CERTIFICATE-----");
 
@@ -46,6 +50,23 @@ public class CertificateService {
 				certificate.getNotBefore() + " até " + certificate.getNotAfter(), certificate.getSigAlgName(),
 				certificate.getIssuerX500Principal().getName(), subject, extractCommonName(subject),
 				extractEmail(subject));
+	}
+
+	public PrivateKey loadEncryptedPrivateKey(String privateKeyPath, String secretPhrase) throws Exception {
+		byte[] encryptedPrivateKeyBytes = Files.readAllBytes(Path.of(privateKeyPath));
+		return loadEncryptedPrivateKey(encryptedPrivateKeyBytes, secretPhrase);
+	}
+
+	public PrivateKey loadEncryptedPrivateKey(byte[] encryptedPrivateKeyBytes, String secretPhrase) throws Exception {
+		byte[] decryptedBytes = decryptPrivateKey(encryptedPrivateKeyBytes, secretPhrase);
+
+		byte[] privateKeyBytes = extractPrivateKeyBytes(decryptedBytes);
+
+		PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+
+		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+
+		return keyFactory.generatePrivate(keySpec);
 	}
 
 	private String extractCommonName(String subject) {
@@ -88,7 +109,6 @@ public class CertificateService {
 
 	private String decodeAsn1HexEmail(String value) {
 		String hex = value.substring(1);
-		System.out.println(hex);
 
 		if (hex.startsWith("16") && hex.length() >= 4) {
 			hex = hex.substring(4);
@@ -105,22 +125,8 @@ public class CertificateService {
 		return result.toString();
 	}
 
-	public PrivateKey loadEncryptedPrivateKey(String privateKeyPath, String secretPhrase) throws Exception {
-		byte[] encryptedPrivateKeyBytes = Files.readAllBytes(Path.of(privateKeyPath));
-
-		byte[] decryptedBytes = decryptPrivateKey(encryptedPrivateKeyBytes, secretPhrase);
-
-		byte[] privateKeyBytes = extractPrivateKeyBytes(decryptedBytes);
-
-		PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-
-		KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-
-		return keyFactory.generatePrivate(keySpec);
-	}
-
 	private byte[] extractPrivateKeyBytes(byte[] decryptedBytes) {
-		String text = new String(decryptedBytes, java.nio.charset.StandardCharsets.UTF_8).trim();
+		String text = new String(decryptedBytes, StandardCharsets.UTF_8).trim();
 
 		if (text.contains("-----BEGIN PRIVATE KEY-----")) {
 			String base64 = text.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "")
@@ -150,7 +156,7 @@ public class CertificateService {
 		KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
 
 		SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG");
-		secureRandom.setSeed(secretPhrase.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+		secureRandom.setSeed(secretPhrase.getBytes(StandardCharsets.UTF_8));
 
 		keyGenerator.init(256, secureRandom);
 
@@ -162,6 +168,7 @@ public class CertificateService {
 
 	public boolean verifyKeyPair(PrivateKey privateKey, X509Certificate certificate) throws Exception {
 		byte[] randomData = new byte[9216];
+
 		SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
 		random.nextBytes(randomData);
 

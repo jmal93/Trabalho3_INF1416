@@ -12,6 +12,7 @@ import java.util.List;
 import javax.crypto.SecretKey;
 
 import br.pucrio.inf1416.cofre.dao.KeyringDAO;
+import br.pucrio.inf1416.cofre.model.CertificateInfo;
 import br.pucrio.inf1416.cofre.model.KeyPairRecord;
 import br.pucrio.inf1416.cofre.model.SecretFileEntry;
 import br.pucrio.inf1416.cofre.model.User;
@@ -95,25 +96,9 @@ public class VaultService {
 			throw new IllegalArgumentException("Chaveiro do usuário não encontrado.");
 		}
 
-		/*
-		 * Aqui existe um detalhe importante:
-		 *
-		 * O CertificateService atual carrega certificado e chave privada a partir de
-		 * caminhos de arquivos. Mas no VaultService você tem certificado/chave vindos
-		 * do banco.
-		 *
-		 * Você tem duas opções:
-		 *
-		 * 1. Criar métodos no CertificateService para carregar certificado a partir de
-		 * String PEM e chave privada a partir de byte[] criptografado.
-		 *
-		 * 2. Escrever temporariamente esses dados em arquivos temporários e reutilizar
-		 * os métodos atuais.
-		 *
-		 * A opção correta é a 1.
-		 */
+		CertificateInfo certificateInfo = certificateService.loadCertificateFromPem(keyPairRecord.getCertificatePem());
 
-		X509Certificate certificate = loadCertificateFromPem(keyPairRecord.getCertificatePem());
+		X509Certificate certificate = certificateInfo.certificate();
 
 		PrivateKey privateKey = loadPrivateKeyFromEncryptedBytes(keyPairRecord.getEncryptedPrivateKey(), secretPhrase);
 

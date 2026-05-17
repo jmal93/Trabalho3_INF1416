@@ -2,7 +2,9 @@ package br.pucrio.inf1416.cofre.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import br.pucrio.inf1416.cofre.model.LogRecord;
 
@@ -37,5 +39,40 @@ public class LogDAO {
 
 			statement.executeUpdate();
 		}
+	}
+
+	public List<LogRecord> findAllChronological() throws Exception {
+		String sql = """
+				SELECT rid, data_hora, mid, uid, arquivo
+				FROM Registros
+				ORDER BY data_hora ASC
+				""";
+
+		List<LogRecord> records = new java.util.ArrayList<>();
+
+		try (PreparedStatement statement = connection.prepareStatement(sql);
+				ResultSet resultSet = statement.executeQuery()) {
+
+			while (resultSet.next()) {
+				LogRecord record = new LogRecord();
+
+				record.setRid(resultSet.getInt("rid"));
+				record.setDateTime(java.time.LocalDateTime.parse(resultSet.getString("data_hora")));
+				record.setMid(resultSet.getInt("mid"));
+
+				int uid = resultSet.getInt("uid");
+				if (resultSet.wasNull()) {
+					record.setUid(null);
+				} else {
+					record.setUid(uid);
+				}
+
+				record.setFileName(resultSet.getString("arquivo"));
+
+				records.add(record);
+			}
+		}
+
+		return records;
 	}
 }

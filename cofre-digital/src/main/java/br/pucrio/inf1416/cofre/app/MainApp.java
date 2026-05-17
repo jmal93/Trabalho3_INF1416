@@ -16,6 +16,7 @@ import br.pucrio.inf1416.cofre.service.CertificateService;
 import br.pucrio.inf1416.cofre.service.CryptoService;
 import br.pucrio.inf1416.cofre.service.PasswordService;
 import br.pucrio.inf1416.cofre.service.TOTPService;
+import br.pucrio.inf1416.cofre.service.VaultService;
 import br.pucrio.inf1416.cofre.ui.LoginView;
 import br.pucrio.inf1416.cofre.ui.RegisterUserView;
 import br.pucrio.inf1416.cofre.ui.RegisterUserView.RegisterMode;
@@ -38,6 +39,7 @@ public class MainApp {
 			CryptoService cryptoService = new CryptoService();
 			TOTPService totpService = new TOTPService(cryptoService);
 			CertificateService certificateService = new CertificateService();
+			VaultService vaultService = new VaultService(cryptoService, certificateService, keyringDAO, auditService);
 
 			auditService.log(1001);
 
@@ -58,7 +60,8 @@ public class MainApp {
 
 				LoginView loginView = new LoginView();
 
-				new AuthController(loginView, authenticationService);
+				new AuthController(loginView, authenticationService, certificateService, passwordService, totpService,
+						userDAO, keyringDAO, groupDAO, auditService, vaultService);
 
 				loginView.setVisible(true);
 			}

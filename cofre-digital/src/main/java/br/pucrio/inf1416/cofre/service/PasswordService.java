@@ -8,11 +8,15 @@ public class PasswordService {
 	private static final int BCRYPT_COST = 8;
 
 	public boolean validPassword(String password) {
+		if (password == null) {
+			return false;
+		}
+
 		boolean correctLength = passwordHasCorrectLength(password);
 		boolean hasRepeatingCharactersInSequence = passwordHasRepeatingCharactersInSequence(password);
 		boolean hasOnlyDigits = passwordHasOnlyDigits(password);
 
-		return correctLength & !hasRepeatingCharactersInSequence & hasOnlyDigits;
+		return correctLength && !hasRepeatingCharactersInSequence && hasOnlyDigits;
 	}
 
 	private boolean passwordHasCorrectLength(String password) {

@@ -1,21 +1,50 @@
 package br.pucrio.inf1416.cofre.controller;
 
+import br.pucrio.inf1416.cofre.dao.GroupDAO;
+import br.pucrio.inf1416.cofre.dao.KeyringDAO;
+import br.pucrio.inf1416.cofre.dao.UserDAO;
 import br.pucrio.inf1416.cofre.model.User;
+import br.pucrio.inf1416.cofre.service.AuditService;
 import br.pucrio.inf1416.cofre.service.AuthenticationService;
+import br.pucrio.inf1416.cofre.service.CertificateService;
+import br.pucrio.inf1416.cofre.service.PasswordService;
+import br.pucrio.inf1416.cofre.service.TOTPService;
+import br.pucrio.inf1416.cofre.service.VaultService;
 import br.pucrio.inf1416.cofre.ui.LoginView;
 import br.pucrio.inf1416.cofre.ui.MainMenuView;
 
 public class AuthController {
+
 	private final LoginView loginView;
 	private final AuthenticationService authenticationService;
+
+	private final CertificateService certificateService;
+	private final PasswordService passwordService;
+	private final TOTPService totpService;
+	private final UserDAO userDAO;
+	private final KeyringDAO keyringDAO;
+	private final GroupDAO groupDAO;
+	private final AuditService auditService;
+	private final VaultService vaultService;
 
 	private User currentUser;
 	private String validatedPassword;
 
-	public AuthController(LoginView loginView, AuthenticationService authenticationService) {
-		super();
+	public AuthController(LoginView loginView, AuthenticationService authenticationService,
+			CertificateService certificateService, PasswordService passwordService, TOTPService totpService,
+			UserDAO userDAO, KeyringDAO keyringDAO, GroupDAO groupDAO, AuditService auditService,
+			VaultService vaultService) {
 		this.loginView = loginView;
 		this.authenticationService = authenticationService;
+		this.certificateService = certificateService;
+		this.passwordService = passwordService;
+		this.totpService = totpService;
+		this.userDAO = userDAO;
+		this.keyringDAO = keyringDAO;
+		this.groupDAO = groupDAO;
+		this.auditService = auditService;
+		this.vaultService = vaultService;
+
 		this.currentUser = null;
 		this.validatedPassword = null;
 
@@ -36,6 +65,7 @@ public class AuthController {
 			currentUser = authenticationService.validateLogin(email);
 
 			loginView.showPasswordStep();
+
 		} catch (Exception e) {
 			currentUser = null;
 			validatedPassword = null;
@@ -54,6 +84,7 @@ public class AuthController {
 			validatedPassword = authenticationService.validatePasswordByPairs(currentUser, loginView.getPressedPairs());
 
 			loginView.showTotpStep();
+
 		} catch (Exception e) {
 			loginView.showMessage(e.getMessage());
 
@@ -64,13 +95,6 @@ public class AuthController {
 				loginView.clearPasswordInput();
 			}
 		}
-	}
-
-	private void resetAuthenticationState() {
-		currentUser = null;
-		validatedPassword = null;
-		loginView.clearPasswordInput();
-		loginView.clearTokenInput();
 	}
 
 	private void handleTotp() {
@@ -90,6 +114,7 @@ public class AuthController {
 			authenticationService.registerSuccessfulAccess(currentUser);
 
 			openMainMenu();
+
 		} catch (Exception e) {
 			loginView.showMessage(e.getMessage());
 
@@ -111,7 +136,17 @@ public class AuthController {
 
 		MainMenuView mainMenuView = new MainMenuView(authenticatedUser);
 
+		new MainMenuController(mainMenuView, authenticatedUser, certificateService, passwordService, totpService,
+				userDAO, keyringDAO, groupDAO, auditService, vaultService);
+
 		mainMenuView.setVisible(true);
+	}
+
+	private void resetAuthenticationState() {
+		currentUser = null;
+		validatedPassword = null;
+		loginView.clearPasswordInput();
+		loginView.clearTokenInput();
 	}
 
 	private void resetSensitiveStateOnly() {

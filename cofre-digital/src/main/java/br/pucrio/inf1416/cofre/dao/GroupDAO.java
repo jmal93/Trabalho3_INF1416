@@ -25,6 +25,10 @@ public class GroupDAO {
 			statement.setInt(1, gid);
 
 			try (ResultSet resultSet = statement.executeQuery()) {
+				if (!resultSet.next()) {
+					throw new IllegalArgumentException("Grupo não encontrado: " + gid);
+				}
+
 				Group group = new Group();
 
 				group.setGid(resultSet.getInt("gid"));
@@ -45,6 +49,10 @@ public class GroupDAO {
 			statement.setString(1, name);
 
 			try (ResultSet resultSet = statement.executeQuery()) {
+				if (!resultSet.next()) {
+					throw new IllegalArgumentException("Grupo não encontrado: " + name);
+				}
+
 				Group group = new Group();
 
 				group.setGid(resultSet.getInt("gid"));
@@ -90,6 +98,10 @@ public class GroupDAO {
 			statement.setString(1, name);
 
 			try (ResultSet resultSet = statement.executeQuery()) {
+				if (!resultSet.next()) {
+					throw new IllegalArgumentException("Grupo não encontrado: " + name);
+				}
+
 				return resultSet.getInt("gid");
 			}
 		}

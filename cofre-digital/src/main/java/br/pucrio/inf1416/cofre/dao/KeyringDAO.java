@@ -38,6 +38,10 @@ public class KeyringDAO {
 			statement.setInt(1, uid);
 
 			try (ResultSet resultSet = statement.executeQuery()) {
+				if (!resultSet.next()) {
+					return null;
+				}
+
 				KeyPairRecord keyPairRecord = new KeyPairRecord();
 
 				keyPairRecord.setKid(resultSet.getInt("kid"));
@@ -60,6 +64,10 @@ public class KeyringDAO {
 			statement.setInt(1, kid);
 
 			try (ResultSet resultSet = statement.executeQuery()) {
+				if (!resultSet.next()) {
+					return null;
+				}
+
 				KeyPairRecord keyPairRecord = new KeyPairRecord();
 
 				keyPairRecord.setKid(resultSet.getInt("kid"));

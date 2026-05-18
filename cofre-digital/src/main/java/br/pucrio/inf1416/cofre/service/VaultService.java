@@ -12,6 +12,7 @@ import java.util.List;
 import javax.crypto.SecretKey;
 
 import br.pucrio.inf1416.cofre.dao.KeyringDAO;
+import br.pucrio.inf1416.cofre.dao.UserDAO;
 import br.pucrio.inf1416.cofre.model.CertificateInfo;
 import br.pucrio.inf1416.cofre.model.KeyPairRecord;
 import br.pucrio.inf1416.cofre.model.SecretFileEntry;
@@ -22,13 +23,16 @@ public class VaultService {
 	private final CryptoService cryptoService;
 	private final CertificateService certificateService;
 	private final KeyringDAO keyringDAO;
+	private final UserDAO userDAO;
 	private final AuditService auditService;
 
 	public VaultService(CryptoService cryptoService, CertificateService certificateService, KeyringDAO keyringDAO,
-			AuditService auditService) {
+			UserDAO userDAO, AuditService auditService) {
+		super();
 		this.cryptoService = cryptoService;
 		this.certificateService = certificateService;
 		this.keyringDAO = keyringDAO;
+		this.userDAO = userDAO;
 		this.auditService = auditService;
 	}
 
@@ -37,7 +41,17 @@ public class VaultService {
 
 		auditService.log(7001, user);
 
-		byte[] indexBytes = decryptProtectedFile(folderPath, "index", user, secretPhrase);
+		User adminUser = userDAO.findFirstAdmin();
+
+		if (adminUser == null) {
+			throw new IllegalArgumentException("Administrador não encontrado.");
+		}
+
+		System.out.println("Usuário logado: " + user.getLogin());
+		System.out.println("Admin usado para abrir o index: " + adminUser.getLogin());
+		System.out.println("UID do admin usado: " + adminUser.getUid());
+
+		byte[] indexBytes = decryptProtectedFile(folderPath, "index", adminUser, secretPhrase);
 
 		List<SecretFileEntry> allEntries = parseIndex(indexBytes);
 
@@ -110,7 +124,7 @@ public class VaultService {
 			throw new IllegalArgumentException("Frase secreta inválida ou chave privada incompatível.");
 		}
 
-		byte[] encryptedSeed = Files.readAllBytes(envPath);
+		byte[] encryptedSeed = readPossiblyBase64File(envPath);
 
 		byte[] seedBytes = cryptoService.decryptWithPrivateKey(encryptedSeed, privateKey);
 

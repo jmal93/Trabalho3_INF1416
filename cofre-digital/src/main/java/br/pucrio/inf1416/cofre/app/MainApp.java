@@ -41,7 +41,8 @@ public class MainApp {
 			QRCodeService qrCodeService = new QRCodeService();
 			TOTPService totpService = new TOTPService(cryptoService);
 			CertificateService certificateService = new CertificateService();
-			VaultService vaultService = new VaultService(cryptoService, certificateService, keyringDAO, auditService);
+			VaultService vaultService = new VaultService(cryptoService, certificateService, keyringDAO, userDAO,
+					auditService);
 
 			auditService.log(1001);
 

@@ -149,4 +149,54 @@ public class UserDAO {
 			throw new java.sql.SQLException("Falha ao obter UID gerado.");
 		}
 	}
+
+	public User findFirstAdmin() throws Exception {
+		String sql = """
+				SELECT
+				    u.uid,
+				    u.login,
+				    u.nome,
+				    u.gid,
+				    g.nome AS grupo_nome,
+				    u.senha_hash,
+				    u.totp_secret_enc,
+				    u.bloqueado_ate,
+				    u.total_acessos,
+				    u.total_consultas
+				FROM Usuarios u
+				JOIN Grupos g ON g.gid = u.gid
+				WHERE g.nome = 'Administrador'
+				ORDER BY u.uid
+				LIMIT 1
+				""";
+
+		try (PreparedStatement statement = connection.prepareStatement(sql);
+				ResultSet resultSet = statement.executeQuery()) {
+
+			if (!resultSet.next()) {
+				return null;
+			}
+
+			User user = new User();
+
+			user.setUid(resultSet.getInt("uid"));
+			user.setLogin(resultSet.getString("login"));
+			user.setNome(resultSet.getString("nome"));
+			user.setGid(resultSet.getInt("gid"));
+			user.setGroupName(resultSet.getString("grupo_nome"));
+			user.setPasswordHash(resultSet.getString("senha_hash"));
+			user.setEncryptedTOTPSecret(resultSet.getBytes("totp_secret_enc"));
+
+			String blockedUntil = resultSet.getString("bloqueado_ate");
+
+			if (blockedUntil != null && !blockedUntil.isBlank()) {
+				user.setBlockedUntil(java.time.LocalDateTime.parse(blockedUntil));
+			}
+
+			user.setTotalAccesses(resultSet.getInt("total_acessos"));
+			user.setTotalQueries(resultSet.getInt("total_consultas"));
+
+			return user;
+		}
+	}
 }

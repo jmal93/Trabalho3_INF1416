@@ -25,21 +25,26 @@ public class VaultService {
 	private final KeyringDAO keyringDAO;
 	private final UserDAO userDAO;
 	private final AuditService auditService;
+	private final String adminSecretPhrase;
 
 	public VaultService(CryptoService cryptoService, CertificateService certificateService, KeyringDAO keyringDAO,
-			UserDAO userDAO, AuditService auditService) {
+			UserDAO userDAO, AuditService auditService, String adminSecretPhrase) {
 		super();
 		this.cryptoService = cryptoService;
 		this.certificateService = certificateService;
 		this.keyringDAO = keyringDAO;
 		this.userDAO = userDAO;
 		this.auditService = auditService;
+		this.adminSecretPhrase = adminSecretPhrase;
 	}
 
-	public List<SecretFileEntry> listVisibleFiles(User user, Path folderPath, String secretPhrase) throws Exception {
+	public List<SecretFileEntry> listVisibleFiles(User user, Path folderPath, String userSecretPhrase)
+			throws Exception {
 		validateFolder(folderPath);
 
 		auditService.log(7001, user);
+
+		validateUserPrivateKey(user, userSecretPhrase);
 
 		User adminUser = userDAO.findFirstAdmin();
 
@@ -47,19 +52,33 @@ public class VaultService {
 			throw new IllegalArgumentException("Administrador não encontrado.");
 		}
 
-		System.out.println("Usuário logado: " + user.getLogin());
-		System.out.println("Admin usado para abrir o index: " + adminUser.getLogin());
-		System.out.println("UID do admin usado: " + adminUser.getUid());
-
-		byte[] indexBytes = decryptProtectedFile(folderPath, "index", adminUser, secretPhrase);
+		byte[] indexBytes = decryptProtectedFile(folderPath, "index", adminUser, adminSecretPhrase);
 
 		List<SecretFileEntry> allEntries = parseIndex(indexBytes);
-
 		List<SecretFileEntry> visibleEntries = filterVisibleFiles(user, allEntries);
 
 		auditService.log(7002, user);
 
 		return visibleEntries;
+	}
+
+	private void validateUserPrivateKey(User user, String secretPhrase) throws Exception {
+		KeyPairRecord keyPairRecord = keyringDAO.findByUserId(user.getUid());
+
+		if (keyPairRecord == null) {
+			throw new IllegalArgumentException("Chaveiro do usuário não encontrado.");
+		}
+
+		CertificateInfo certificateInfo = certificateService.loadCertificateFromPem(keyPairRecord.getCertificatePem());
+
+		PrivateKey privateKey = certificateService.loadEncryptedPrivateKey(keyPairRecord.getEncryptedPrivateKey(),
+				secretPhrase);
+
+		boolean valid = certificateService.verifyKeyPair(privateKey, certificateInfo.certificate());
+
+		if (!valid) {
+			throw new IllegalArgumentException("Frase secreta inválida ou chave privada incompatível.");
+		}
 	}
 
 	public void decryptSelectedFile(User user, Path folderPath, SecretFileEntry entry, String secretPhrase)
@@ -74,7 +93,7 @@ public class VaultService {
 		auditService.log(7010, user, entry.getCodeName());
 
 		if (!canDecryptFile(user, entry)) {
-			auditService.log(7011, user, entry.getCodeName());
+			auditService.log(7012, user, entry.getCodeName());
 			throw new IllegalArgumentException("Você não tem permissão para descriptografar este arquivo.");
 		}
 

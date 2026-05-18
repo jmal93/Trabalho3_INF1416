@@ -1,6 +1,10 @@
 package br.pucrio.inf1416.cofre.app;
 
+import java.security.PrivateKey;
 import java.sql.Connection;
+
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
 
 import br.pucrio.inf1416.cofre.controller.AuthController;
 import br.pucrio.inf1416.cofre.controller.UserController;
@@ -10,6 +14,9 @@ import br.pucrio.inf1416.cofre.dao.GroupDAO;
 import br.pucrio.inf1416.cofre.dao.KeyringDAO;
 import br.pucrio.inf1416.cofre.dao.LogDAO;
 import br.pucrio.inf1416.cofre.dao.UserDAO;
+import br.pucrio.inf1416.cofre.model.CertificateInfo;
+import br.pucrio.inf1416.cofre.model.KeyPairRecord;
+import br.pucrio.inf1416.cofre.model.User;
 import br.pucrio.inf1416.cofre.service.AuditService;
 import br.pucrio.inf1416.cofre.service.AuthenticationService;
 import br.pucrio.inf1416.cofre.service.CertificateService;
@@ -23,6 +30,7 @@ import br.pucrio.inf1416.cofre.ui.RegisterUserView;
 import br.pucrio.inf1416.cofre.ui.RegisterUserView.RegisterMode;
 
 public class MainApp {
+
 	public static void main(String[] args) {
 		try {
 			Connection connection = DatabaseConnection.getConnection();
@@ -41,8 +49,6 @@ public class MainApp {
 			QRCodeService qrCodeService = new QRCodeService();
 			TOTPService totpService = new TOTPService(cryptoService);
 			CertificateService certificateService = new CertificateService();
-			VaultService vaultService = new VaultService(cryptoService, certificateService, keyringDAO, userDAO,
-					auditService);
 
 			auditService.log(1001);
 
@@ -55,8 +61,16 @@ public class MainApp {
 						userDAO, keyringDAO, groupDAO, auditService);
 
 				registerUserView.setVisible(true);
+
 			} else {
 				auditService.log(1006);
+
+				String adminSecretPhrase = requestAdminSecretPhrase();
+
+				validateAdminSecretPhrase(userDAO, keyringDAO, certificateService, adminSecretPhrase);
+
+				VaultService vaultService = new VaultService(cryptoService, certificateService, keyringDAO, userDAO,
+						auditService, adminSecretPhrase);
 
 				AuthenticationService authenticationService = new AuthenticationService(userDAO, passwordService,
 						totpService, auditService);
@@ -68,9 +82,61 @@ public class MainApp {
 
 				loginView.setVisible(true);
 			}
+
 		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Erro ao iniciar o sistema: " + e.getMessage(), "Erro",
+					JOptionPane.ERROR_MESSAGE);
+
 			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 
+	private static String requestAdminSecretPhrase() {
+		JPasswordField passwordField = new JPasswordField(30);
+
+		int option = JOptionPane.showConfirmDialog(null, passwordField,
+				"Frase secreta da chave privada do administrador", JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.PLAIN_MESSAGE);
+
+		if (option != JOptionPane.OK_OPTION) {
+			throw new IllegalArgumentException("Inicialização cancelada.");
+		}
+
+		String secretPhrase = new String(passwordField.getPassword());
+
+		if (secretPhrase.isBlank()) {
+			throw new IllegalArgumentException("Frase secreta do administrador não informada.");
+		}
+
+		return secretPhrase;
+	}
+
+	private static void validateAdminSecretPhrase(UserDAO userDAO, KeyringDAO keyringDAO,
+			CertificateService certificateService, String adminSecretPhrase) throws Exception {
+
+		User adminUser = userDAO.findFirstAdmin();
+
+		if (adminUser == null) {
+			throw new IllegalArgumentException("Administrador não encontrado.");
+		}
+
+		KeyPairRecord keyPairRecord = keyringDAO.findByUserId(adminUser.getUid());
+
+		if (keyPairRecord == null) {
+			throw new IllegalArgumentException("Chaveiro do administrador não encontrado.");
+		}
+
+		CertificateInfo certificateInfo = certificateService.loadCertificateFromPem(keyPairRecord.getCertificatePem());
+
+		PrivateKey privateKey = certificateService.loadEncryptedPrivateKey(keyPairRecord.getEncryptedPrivateKey(),
+				adminSecretPhrase);
+
+		boolean valid = certificateService.verifyKeyPair(privateKey, certificateInfo.certificate());
+
+		if (!valid) {
+			throw new IllegalArgumentException(
+					"Frase secreta do administrador inválida ou chave privada incompatível.");
+		}
+	}
 }
